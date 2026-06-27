@@ -19,8 +19,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('vehicles', VehicleController::class);
     });
 
+    Route::get('/rutas/activa', [RutaController::class, 'activa'])->name('api.rutas.activa');
     Route::post('/rutas/iniciar', [RutaController::class, 'iniciar'])->name('api.rutas.iniciar');
     Route::put('/rutas/{ruta}/finalizar', [RutaController::class, 'finalizar'])->name('api.rutas.finalizar');
+    Route::get('/rutas', [RutaController::class, 'historial'])->name('api.rutas.historial');
 
     Route::post('/ubicaciones', [UbicacionController::class, 'store'])->name('api.ubicaciones.store');
     Route::post('/ubicaciones/bulk', [UbicacionController::class, 'bulkStore'])->name('api.ubicaciones.bulk');

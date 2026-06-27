@@ -10,6 +10,30 @@ use Illuminate\Http\Request;
 
 class RutaController extends Controller
 {
+    public function activa(Request $request): JsonResponse
+    {
+        $ruta = Ruta::where('chofer_id', $request->user()->id)
+            ->where('estado', 'activa')
+            ->first();
+
+        if (!$ruta) {
+            return response()->json(['ruta' => null]);
+        }
+
+        return response()->json(['ruta' => $ruta]);
+    }
+
+    public function historial(Request $request): JsonResponse
+    {
+        $rutas = Ruta::where('chofer_id', $request->user()->id)
+            ->where('estado', 'finalizada')
+            ->orderByDesc('hora_inicio')
+            ->limit(50)
+            ->get();
+
+        return response()->json($rutas);
+    }
+
     public function iniciar(Request $request): JsonResponse
     {
         $request->validate([
