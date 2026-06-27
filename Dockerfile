@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     libzip-dev \
     libonig-dev \
-    && docker-php-ext-install zip pdo_mysql mbstring \
+    libpq-dev \
+    && docker-php-ext-install zip pdo_mysql mbstring pdo_pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

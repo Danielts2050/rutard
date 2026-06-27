@@ -24,7 +24,7 @@ Route::resource('vehicles', VehicleController::class)->middleware('auth');
 // Admin routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [WebAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [WebAuthController::class, 'login'])->name('login');
+    Route::post('/login', [WebAuthController::class, 'login'])->name('login.post');
 
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
