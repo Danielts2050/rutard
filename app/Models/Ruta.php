@@ -30,10 +30,10 @@ class Ruta extends Model
         return [
             'hora_inicio' => 'datetime',
             'hora_fin' => 'datetime',
-            'latitud_inicio' => 'decimal:7',
-            'longitud_inicio' => 'decimal:7',
-            'latitud_fin' => 'decimal:7',
-            'longitud_fin' => 'decimal:7',
+            'latitud_inicio' => 'float',
+            'longitud_inicio' => 'float',
+            'latitud_fin' => 'float',
+            'longitud_fin' => 'float',
         ];
     }
 
