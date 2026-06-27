@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('modelo', 50);
             $table->year('anio');
             $table->unsignedTinyInteger('capacidad');
-            $table->enum('estado', ['activo', 'inactivo', 'mantenimiento'])->default('activo');
+            $table->string('estado', 20)->default('activo');
             $table->foreignId('chofer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('latitud_fin', 10, 7)->nullable();
             $table->decimal('longitud_fin', 10, 7)->nullable();
             $table->unsignedInteger('duracion_minutos')->nullable();
-            $table->enum('estado', ['activa', 'finalizada'])->default('activa');
+            $table->string('estado', 20)->default('activa');
             $table->timestamps();
         });
     }
