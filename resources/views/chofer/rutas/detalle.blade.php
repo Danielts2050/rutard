@@ -1,40 +1,54 @@
 @extends('layouts.chofer')
 @section('title', 'Detalle de Ruta')
 @push('styles')
-<style>#mapa-detalle { height: 400px; border-radius: 0.5rem; border: 1px solid #d1d5db; }</style>
+<style>
+    #mapa-detalle { height: 400px; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+    .leaflet-container { background: var(--bg-body); }
+</style>
 @endpush
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('chofer.rutas.historial') }}" class="text-blue" style="display: inline-block; margin-bottom: 1rem;">&larr; Historial</a>
+    <a href="{{ route('chofer.rutas.historial') }}" class="text-green" style="display: inline-block; margin-bottom: 1rem; font-size: 0.875rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="15 18 9 12 15 6"/></svg>
+        Historial
+    </a>
 
-    <h1 class="font-bold" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Detalle de Ruta</h1>
+    <div class="section-header">
+        <h1 class="section-title">Detalle de Ruta</h1>
+        @php
+            $inicio = \Carbon\Carbon::parse($ruta->hora_inicio);
+            $fin = $ruta->hora_fin ? \Carbon\Carbon::parse($ruta->hora_fin) : null;
+        @endphp
+        @if($fin)
+            <span class="badge badge-green"><span class="badge-dot green"></span> Completada</span>
+        @else
+            <span class="badge badge-yellow"><span class="badge-dot yellow"></span> En curso</span>
+        @endif
+    </div>
 
-    @php
-        $inicio = \Carbon\Carbon::parse($ruta->hora_inicio);
-        $fin = $ruta->hora_fin ? \Carbon\Carbon::parse($ruta->hora_fin) : null;
-    @endphp
-
-    <div class="grid-4">
-        <div class="card">
-            <div class="text-sm text-gray">Veh&iacute;culo</div>
-            <div class="font-semibold">{{ $ruta->vehiculo->placa ?? 'N/A' }}</div>
+    <div class="detail-grid">
+        <div class="detail-card">
+            <div class="label">Vehiculo</div>
+            <div class="value">{{ $ruta->vehiculo->placa ?? 'N/A' }}</div>
         </div>
-        <div class="card">
-            <div class="text-sm text-gray">Inicio</div>
-            <div class="font-semibold">{{ $inicio->format('d/m/Y H:i:s') }}</div>
+        <div class="detail-card">
+            <div class="label">Inicio</div>
+            <div class="value font-mono" style="font-size:0.8125rem;">{{ $inicio->format('d/m/Y H:i:s') }}</div>
         </div>
-        <div class="card">
-            <div class="text-sm text-gray">Fin</div>
-            <div class="font-semibold">{{ $fin?->format('d/m/Y H:i:s') ?? '-' }}</div>
+        <div class="detail-card">
+            <div class="label">Fin</div>
+            <div class="value font-mono" style="font-size:0.8125rem;">{{ $fin?->format('d/m/Y H:i:s') ?? '-' }}</div>
         </div>
-        <div class="card">
-            <div class="text-sm text-gray">Duraci&oacute;n</div>
-            <div class="font-semibold">{{ $fin ? $inicio->diff($fin)->format('%H:%I') . ' h' : '-' }}</div>
+        <div class="detail-card">
+            <div class="label">Duracion</div>
+            <div class="value text-green">{{ $fin ? $inicio->diff($fin)->format('%H:%I') . ' h' : '-' }}</div>
         </div>
     </div>
 
-    <div id="mapa-detalle" class="mt-4"></div>
+    <div class="map-container mt-4">
+        <div id="mapa-detalle"></div>
+    </div>
 </div>
 @endsection
 
@@ -43,8 +57,8 @@
 <script>
 (function() {
     var map = L.map('mapa-detalle').setView([18.4861, -69.9312], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
 
     var positions = [
@@ -54,12 +68,12 @@
     ];
 
     if (positions.length > 1) {
-        L.polyline(positions, { color: '#3b82f6', weight: 3 }).addTo(map);
-        L.marker(positions[0]).addTo(map).bindPopup('Inicio');
-        L.marker(positions[positions.length - 1]).addTo(map).bindPopup('Fin');
-        map.fitBounds(L.latLngBounds(positions));
+        L.polyline(positions, { color: '#4ade80', weight: 3, opacity: 0.8 }).addTo(map);
+        L.circleMarker(positions[0], { radius: 6, fillColor: '#4ade80', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup('Inicio');
+        L.circleMarker(positions[positions.length - 1], { radius: 6, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup('Fin');
+        map.fitBounds(L.latLngBounds(positions), { padding: [30, 30] });
     } else if (positions.length === 1) {
-        L.marker(positions[0]).addTo(map);
+        L.circleMarker(positions[0], { radius: 6, fillColor: '#4ade80', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
         map.setView(positions[0], 15);
     }
 })();

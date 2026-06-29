@@ -1,7 +1,10 @@
 @extends('layouts.chofer')
 @section('title', 'Ruta Activa')
 @push('styles')
-<style>#mapa-activo { height: calc(100vh - 240px); min-height: 400px; border-radius: 0.5rem; border: 1px solid #d1d5db; }</style>
+<style>
+    #mapa-activo { height: calc(100vh - 310px); min-height: 350px; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+    .leaflet-container { background: var(--bg-body); }
+</style>
 @endpush
 
 @section('content')
@@ -9,13 +12,13 @@
     <div>
         <h1>Ruta Activa</h1>
         <p>
-            Vehículo: {{ $ruta->vehiculo->placa ?? 'N/A' }} |
+            {{ $ruta->vehiculo->placa ?? 'N/A' }} &middot;
             Inicio: {{ \Carbon\Carbon::parse($ruta->hora_inicio)->format('H:i:s') }}
         </p>
     </div>
     <div class="gps-timer">
         <div class="time" id="timer">00:00:00</div>
-        <div class="label">tiempo transcurrido</div>
+        <div class="label">Tiempo transcurrido</div>
     </div>
 </div>
 
@@ -34,15 +37,17 @@
     </div>
 </div>
 
-<div id="mapa-activo" class="mt-4"></div>
+<div class="map-container mt-4">
+    <div id="mapa-activo"></div>
+</div>
 
 <div class="map-controls">
-    <button id="btn-finalizar" onclick="confirmarFinalizar()"
-            class="btn btn-danger btn-block">
+    <button id="btn-finalizar" onclick="confirmarFinalizar()" class="btn btn-danger btn-block">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
         Finalizar Ruta
     </button>
-    <button id="btn-recenter" onclick="recentrar()"
-            class="btn btn-primary btn-block">
+    <button id="btn-recenter" onclick="recentrar()" class="btn btn-green btn-block">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M2 12h4"/></svg>
         Centrar
     </button>
 </div>
@@ -63,16 +68,16 @@
     var startTime = new Date("{{ \Carbon\Carbon::parse($ruta->hora_inicio)->format('Y/m/d H:i:s') }}").getTime();
 
     var map = L.map('mapa-activo').setView([18.4861, -69.9312], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
 
     var userMarker = L.circleMarker([18.4861, -69.9312], {
-        radius: 8, fillColor: '#3b82f6', color: '#fff', weight: 2, fillOpacity: 1
+        radius: 8, fillColor: '#4ade80', color: '#fff', weight: 2, fillOpacity: 1
     }).addTo(map);
 
-    var accuracyCircle = L.circle([18.4861, -69.9312], { radius: 10, color: '#3b82f6', fillOpacity: 0.1 });
-    var pathLine = L.polyline([], { color: '#3b82f6', weight: 3 }).addTo(map);
+    var accuracyCircle = L.circle([18.4861, -69.9312], { radius: 10, color: '#4ade80', fillOpacity: 0.08 });
+    var pathLine = L.polyline([], { color: '#4ade80', weight: 3, opacity: 0.8 }).addTo(map);
     var positions = [];
     var totalKm = 0;
 
@@ -99,10 +104,7 @@
         var csrf = document.querySelector('meta[name="csrf-token"]');
         fetch('/chofer/rutas/' + rutaId + '/ubicaciones', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf ? csrf.content : ''
-            },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
             body: JSON.stringify({ latitud: lat, longitud: lng })
         }).catch(function() {});
     }
@@ -121,10 +123,7 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    window.recentrar = function() {
-        var pos = userMarker.getLatLng();
-        map.setView(pos, 15);
-    };
+    window.recentrar = function() { map.setView(userMarker.getLatLng(), 15); };
 
     window.confirmarFinalizar = function() {
         navigator.geolocation.getCurrentPosition(function(pos) {
@@ -133,9 +132,9 @@
             document.getElementById('km_recorridos').value = totalKm.toFixed(2);
             document.getElementById('finalizar-form').submit();
         }, function() {
-            var pos = userMarker.getLatLng();
-            document.getElementById('latitud_fin').value = pos.lat;
-            document.getElementById('longitud_fin').value = pos.lng;
+            var p = userMarker.getLatLng();
+            document.getElementById('latitud_fin').value = p.lat;
+            document.getElementById('longitud_fin').value = p.lng;
             document.getElementById('km_recorridos').value = totalKm.toFixed(2);
             document.getElementById('finalizar-form').submit();
         }, { enableHighAccuracy: true, timeout: 5000 });
@@ -151,7 +150,6 @@
     setInterval(updateTimer, 1000);
     updateTimer();
 
-    // Load existing ubicaciones as path
     @if($ruta->ubicaciones->count() > 1)
         positions = [
             @foreach($ruta->ubicaciones as $ub)
