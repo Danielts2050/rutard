@@ -2,46 +2,46 @@
 @section('title', 'Historial')
 
 @section('content')
-<div class="space-y-4">
-    <h1 class="text-2xl font-bold">Historial de Rutas</h1>
+<div class="mb-6">
+    <h1 class="font-bold" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Historial de Rutas</h1>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left">Fecha</th>
-                    <th class="px-4 py-3 text-left">Vehículo</th>
-                    <th class="px-4 py-3 text-right">Duración</th>
-                    <th class="px-4 py-3 text-right">Min</th>
-                    <th class="px-4 py-3"></th>
+                    <th>Fecha</th>
+                    <th>Veh&iacute;culo</th>
+                    <th class="text-right">Duraci&oacute;n</th>
+                    <th class="text-right">Min</th>
+                    <th></th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody>
                 @forelse($rutas as $r)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-4 py-3">{{ \Carbon\Carbon::parse($r->hora_inicio)->format('d/m/Y H:i') }}</td>
-                    <td class="px-4 py-3">{{ $r->vehiculo->placa ?? 'N/A' }}</td>
-                    <td class="px-4 py-3 text-right font-mono">
-                        @php
-                            $inicio = \Carbon\Carbon::parse($r->hora_inicio);
-                            $fin = $r->hora_fin ? \Carbon\Carbon::parse($r->hora_fin) : null;
-                        @endphp
-                        {{ $fin ? $inicio->diff($fin)->format('%H:%I:%S') : '-' }}
-                    </td>
-                    <td class="px-4 py-3 text-right">{{ $r->duracion_minutos ?? '-' }}</td>
-                    <td class="px-4 py-3 text-right">
-                        <a href="{{ route('chofer.rutas.detalle', $r) }}" class="text-blue-600 hover:underline">Ver</a>
+                @php
+                    $inicio = \Carbon\Carbon::parse($r->hora_inicio);
+                    $fin = $r->hora_fin ? \Carbon\Carbon::parse($r->hora_fin) : null;
+                @endphp
+                <tr>
+                    <td>{{ $inicio->format('d/m/Y H:i') }}</td>
+                    <td>{{ $r->vehiculo->placa ?? 'N/A' }}</td>
+                    <td class="text-right font-mono">{{ $fin ? $inicio->diff($fin)->format('%H:%I:%S') : '-' }}</td>
+                    <td class="text-right">{{ $r->duracion_minutos ?? '-' }}</td>
+                    <td class="text-right">
+                        <a href="{{ route('chofer.rutas.detalle', $r) }}" class="text-blue">Ver</a>
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">No hay rutas finalizadas</td>
+                <tr class="table-empty">
+                    <td colspan="5">No hay rutas finalizadas</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    {{ $rutas->links() }}
+    <div class="pagination">
+        {{ $rutas->links() }}
+    </div>
 </div>
 @endsection
