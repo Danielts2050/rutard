@@ -7,6 +7,10 @@
     <h1><i class="bi bi-truck"></i> Vehículos</h1>
 </div>
 
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
 <div class="card">
     <div class="card-body p-0">
         <table class="table table-striped mb-0">
@@ -35,7 +39,19 @@
                                 {{ ucfirst($vehicle->estado) }}
                             </span>
                         </td>
-                        <td>{{ $vehicle->chofer?->name ?? '—' }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('admin.vehicles.assign', $vehicle) }}" class="d-flex align-items-center gap-2">
+                                @csrf
+                                <select name="chofer_id" class="form-select form-select-sm" style="width:auto;min-width:140px;" onchange="this.form.submit()">
+                                    <option value="">Sin chofer</option>
+                                    @foreach($choferes as $ch)
+                                        <option value="{{ $ch->id }}" {{ $vehicle->chofer_id == $ch->id ? 'selected' : '' }}>
+                                            {{ $ch->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </td>
                         <td>{{ $vehicle->rutas()->count() }}</td>
                     </tr>
                 @empty

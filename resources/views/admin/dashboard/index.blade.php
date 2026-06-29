@@ -4,6 +4,12 @@
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" rel="stylesheet">
+<style>
+    #mapa-activos { height: 400px; border-radius:8px; }
+    .leaflet-popup-content { margin:10px 15px; }
+    .leaflet-popup-content strong { display:block; font-size:14px; }
+    .leaflet-popup-content small { color:#666; }
+</style>
 @endpush
 
 @section('content')
@@ -62,6 +68,18 @@
         </div>
     </div>
 </div>
+
+@if($rutasActivasList->count() > 0)
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-geo-alt"></i> Rutas activas en tiempo real</span>
+        <small class="text-secondary" id="ultima-actualizacion"></small>
+    </div>
+    <div class="card-body p-2">
+        <div id="mapa-activos"></div>
+    </div>
+</div>
+@endif
 
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -162,4 +180,53 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+@if($rutasActivasList->count() > 0)
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+(function() {
+    var map = L.map('mapa-activos').setView([18.4861, -69.9312], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var markers = {};
+    var bounds = [];
+
+    function cargarActivas() {
+        fetch('{{ route("admin.rutas.mapa-activas") }}')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                data.forEach(function(r) {
+                    if (markers[r.id]) {
+                        markers[r.id].setLatLng([r.lat, r.lng]);
+                        markers[r.id].setPopupContent(
+                            '<strong>' + r.chofer + '</strong>' +
+                            '<small>' + r.placa + ' &middot; ' + r.hora_inicio + '</small><br>' +
+                            '<small>Ultima: ' + r.ultima_actualizacion + '</small>'
+                        );
+                    } else {
+                        var marker = L.circleMarker([r.lat, r.lng], {
+                            radius: 8, fillColor: '#198754', color: '#fff', weight: 2, fillOpacity: 1
+                        }).addTo(map);
+                        marker.bindPopup(
+                            '<strong>' + r.chofer + '</strong>' +
+                            '<small>' + r.placa + ' &middot; ' + r.hora_inicio + '</small><br>' +
+                            '<small>Ultima: ' + r.ultima_actualizacion + '</small>'
+                        );
+                        markers[r.id] = marker;
+                    }
+                    bounds.push([r.lat, r.lng]);
+                });
+                if (bounds.length > 1) map.fitBounds(bounds, { padding: [30, 30] });
+                document.getElementById('ultima-actualizacion').textContent =
+                    'Actualizado: ' + new Date().toLocaleTimeString();
+            }).catch(function() {});
+    }
+
+    cargarActivas();
+    setInterval(cargarActivas, 15000);
+})();
+</script>
+@endif
 @endpush

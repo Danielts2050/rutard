@@ -50,6 +50,7 @@ class RutaController extends Controller
             'ruta_id' => $ruta->id,
             'latitud' => $data['latitud_inicio'],
             'longitud' => $data['longitud_inicio'],
+            'velocidad' => 0,
             'fecha_hora' => Carbon::now(),
         ]);
 
@@ -87,6 +88,7 @@ class RutaController extends Controller
             'ruta_id' => $ruta->id,
             'latitud' => $data['latitud_fin'],
             'longitud' => $data['longitud_fin'],
+            'velocidad' => 0,
             'fecha_hora' => $ahora,
         ]);
 
@@ -95,6 +97,7 @@ class RutaController extends Controller
             'latitud_fin' => $data['latitud_fin'],
             'longitud_fin' => $data['longitud_fin'],
             'duracion_minutos' => $duracion,
+            'km_recorridos' => $data['km_recorridos'] ?? 0,
             'estado' => 'finalizada',
         ]);
 
@@ -132,12 +135,14 @@ class RutaController extends Controller
         $data = $request->validate([
             'latitud' => 'required|numeric',
             'longitud' => 'required|numeric',
+            'velocidad' => 'nullable|numeric|min:0',
         ]);
 
         Ubicacion::create([
             'ruta_id' => $ruta->id,
             'latitud' => $data['latitud'],
             'longitud' => $data['longitud'],
+            'velocidad' => $data['velocidad'] ?? 0,
             'fecha_hora' => Carbon::now(),
         ]);
 

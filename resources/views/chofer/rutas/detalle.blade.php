@@ -41,8 +41,8 @@
             <div class="value font-mono" style="font-size:0.8125rem;">{{ $fin?->format('d/m/Y H:i:s') ?? '-' }}</div>
         </div>
         <div class="detail-card">
-            <div class="label">Duracion</div>
-            <div class="value text-green">{{ $fin ? $inicio->diff($fin)->format('%H:%I') . ' h' : '-' }}</div>
+            <div class="label">Distancia</div>
+            <div class="value text-green">{{ $ruta->km_recorridos ? number_format($ruta->km_recorridos, 2) . ' km' : ($fin ? $inicio->diff($fin)->format('%H:%I') . ' h' : '-') }}</div>
         </div>
     </div>
 
@@ -63,18 +63,35 @@
 
     var positions = [
         @foreach($ruta->ubicaciones as $ub)
-            [{{ $ub->latitud }}, {{ $ub->longitud }}],
+            { lat: {{ $ub->latitud }}, lng: {{ $ub->longitud }}, time: '{{ $ub->fecha_hora?->format("H:i:s") ?? "" }}', speed: {{ $ub->velocidad ?? 0 }} },
         @endforeach
     ];
 
     if (positions.length > 1) {
-        L.polyline(positions, { color: '#4ade80', weight: 3, opacity: 0.8 }).addTo(map);
-        L.circleMarker(positions[0], { radius: 6, fillColor: '#4ade80', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup('Inicio');
-        L.circleMarker(positions[positions.length - 1], { radius: 6, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup('Fin');
-        map.fitBounds(L.latLngBounds(positions), { padding: [30, 30] });
+        var latlngs = positions.map(function(p) { return [p.lat, p.lng]; });
+        var polyline = L.polyline(latlngs, { color: '#4ade80', weight: 3, opacity: 0.8 }).addTo(map);
+
+        positions.forEach(function(p, i) {
+            var color = i === 0 ? '#4ade80' : (i === positions.length - 1 ? '#ef4444' : '#3b82f6');
+            var label = i === 0 ? 'Inicio' : (i === positions.length - 1 ? 'Fin' : 'Punto #' + i);
+            var marker = L.circleMarker([p.lat, p.lng], {
+                radius: i === 0 || i === positions.length - 1 ? 7 : 4,
+                fillColor: color, color: '#fff', weight: 2, fillOpacity: 1
+            }).addTo(map);
+
+            var popupHtml = '<strong>' + label + '</strong><br>' +
+                '<span style="color:#9ca3af;font-size:12px;">' + p.lat.toFixed(5) + ', ' + p.lng.toFixed(5) + '</span>';
+            if (p.time) popupHtml += '<br>Hora: ' + p.time;
+            if (p.speed > 0) popupHtml += ' | Vel: ' + (p.speed * 3.6).toFixed(1) + ' km/h';
+            marker.bindPopup(popupHtml);
+        });
+
+        map.fitBounds(L.latLngBounds(latlngs), { padding: [30, 30] });
     } else if (positions.length === 1) {
-        L.circleMarker(positions[0], { radius: 6, fillColor: '#4ade80', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
-        map.setView(positions[0], 15);
+        L.circleMarker([positions[0].lat, positions[0].lng], {
+            radius: 6, fillColor: '#4ade80', color: '#fff', weight: 2, fillOpacity: 1
+        }).addTo(map);
+        map.setView([positions[0].lat, positions[0].lng], 15);
     }
 })();
 </script>

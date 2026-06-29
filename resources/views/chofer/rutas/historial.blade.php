@@ -13,7 +13,7 @@
                 <th>Fecha</th>
                 <th>Vehiculo</th>
                 <th class="text-right">Duracion</th>
-                <th class="text-right">Min</th>
+                <th class="text-right">KM</th>
                 <th></th>
             </tr>
         </thead>
@@ -27,7 +27,7 @@
                 <td>{{ $inicio->format('d/m/Y H:i') }}</td>
                 <td><span class="badge badge-blue">{{ $r->vehiculo->placa ?? 'N/A' }}</span></td>
                 <td class="text-right font-mono">{{ $fin ? $inicio->diff($fin)->format('%H:%I:%S') : '-' }}</td>
-                <td class="text-right">{{ $r->duracion_minutos ?? '-' }}</td>
+                <td class="text-right text-green font-semibold">{{ $r->km_recorridos ? number_format($r->km_recorridos, 1) : '-' }}</td>
                 <td class="text-right">
                     <a href="{{ route('chofer.rutas.detalle', $r) }}" class="text-green" style="font-weight:500;">Ver</a>
                 </td>

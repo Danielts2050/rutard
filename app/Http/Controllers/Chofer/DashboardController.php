@@ -20,9 +20,10 @@ class DashboardController extends Controller
             'rutas_hoy' => Ruta::where('chofer_id', $user->id)
                 ->whereDate('hora_inicio', today())
                 ->count(),
-            'km_hoy' => Ruta::where('chofer_id', $user->id)
+            'km_hoy' => (float) Ruta::where('chofer_id', $user->id)
                 ->whereDate('hora_inicio', today())
-                ->sum('duracion_minutos'),
+                ->whereNotNull('km_recorridos')
+                ->sum('km_recorridos'),
             'rutas_semana' => Ruta::where('chofer_id', $user->id)
                 ->whereBetween('hora_inicio', [now()->startOfWeek(), now()->endOfWeek()])
                 ->count(),

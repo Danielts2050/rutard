@@ -4,6 +4,17 @@
 <style>
     #mapa-activo { height: calc(100vh - 310px); min-height: 350px; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
     .leaflet-container { background: var(--bg-body); }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:2rem; width:100%; max-width:400px; text-align:center; }
+    .modal-box h3 { margin-bottom:0.5rem; font-size:1.25rem; }
+    .modal-box p { color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.875rem; }
+    .modal-actions { display:flex; gap:0.75rem; }
+    .modal-actions .btn { flex:1; }
+    .spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(0,0,0,0.2); border-top-color:#000; border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; }
+    .btn-green .spinner { border-color:rgba(0,0,0,0.15); border-top-color:#000; }
+    .btn-danger .spinner { border-color:rgba(255,255,255,0.3); border-top-color:#fff; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 @endpush
 
@@ -42,11 +53,11 @@
 </div>
 
 <div class="map-controls">
-    <button id="btn-finalizar" onclick="confirmarFinalizar()" class="btn btn-danger btn-block">
+    <button id="btn-finalizar" onclick="abrirModal()" class="btn btn-danger btn-block">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
         Finalizar Ruta
     </button>
-    <button id="btn-recenter" onclick="recentrar()" class="btn btn-green btn-block">
+    <button id="btn-recenter" onclick="recentrar()" class="btn btn-ghost btn-block">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M2 12h4"/></svg>
         Centrar
     </button>
@@ -58,6 +69,20 @@
     <input type="hidden" name="longitud_fin" id="longitud_fin">
     <input type="hidden" name="km_recorridos" id="km_recorridos">
 </form>
+
+<div class="modal-overlay" id="modal-confirmar">
+    <div class="modal-box">
+        <h3>Finalizar Ruta</h3>
+        <p>¿Seguro que deseas finalizar esta ruta?</p>
+        <p class="text-sm text-green" id="modal-resumen"></p>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarFinalizar()" id="btn-confirmar-finalizar">
+                Finalizar
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -105,7 +130,7 @@
         fetch('/chofer/rutas/' + rutaId + '/ubicaciones', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf ? csrf.content : '' },
-            body: JSON.stringify({ latitud: lat, longitud: lng })
+            body: JSON.stringify({ latitud: lat, longitud: lng, velocidad: speed })
         }).catch(function() {});
     }
 
@@ -125,7 +150,22 @@
 
     window.recentrar = function() { map.setView(userMarker.getLatLng(), 15); };
 
+    window.abrirModal = function() {
+        var p = userMarker.getLatLng();
+        document.getElementById('modal-resumen').textContent =
+            'Distancia: ' + totalKm.toFixed(2) + ' km | Tiempo: ' + document.getElementById('timer').textContent;
+        document.getElementById('modal-confirmar').classList.add('active');
+    };
+
+    window.cerrarModal = function() {
+        document.getElementById('modal-confirmar').classList.remove('active');
+    };
+
     window.confirmarFinalizar = function() {
+        var btn = document.getElementById('btn-confirmar-finalizar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Finalizando...';
+
         navigator.geolocation.getCurrentPosition(function(pos) {
             document.getElementById('latitud_fin').value = pos.coords.latitude;
             document.getElementById('longitud_fin').value = pos.coords.longitude;
