@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libonig-dev \
     libpq-dev \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && docker-php-ext-install zip pdo_mysql mbstring pdo_pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
