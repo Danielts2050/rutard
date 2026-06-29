@@ -49,8 +49,8 @@
 <script>
 (function() {
     var map = L.map('mapa-inicio').setView([18.4861, -69.9312], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     var marker = L.marker([18.4861, -69.9312], { draggable: true }).addTo(map);

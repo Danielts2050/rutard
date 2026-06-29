@@ -68,8 +68,8 @@
     var startTime = new Date("{{ \Carbon\Carbon::parse($ruta->hora_inicio)->format('Y/m/d H:i:s') }}").getTime();
 
     var map = L.map('mapa-activo').setView([18.4861, -69.9312], 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     var userMarker = L.circleMarker([18.4861, -69.9312], {
