@@ -22,6 +22,7 @@ class Ruta extends Model
         'latitud_fin',
         'longitud_fin',
         'duracion_minutos',
+        'km_recorridos',
         'estado',
     ];
 

@@ -7,27 +7,46 @@ use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\RutaController as AdminRutaController;
 use App\Http\Controllers\Admin\RutaDetalleController;
 use App\Http\Controllers\Admin\VehicleAdminController;
-use App\Http\Controllers\Admin\WebAuthController;
+use App\Http\Controllers\Admin\WebAuthController as AdminWebAuthController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Chofer\DashboardController as ChoferDashboardController;
+use App\Http\Controllers\Chofer\RutaController as ChoferRutaController;
+use App\Http\Controllers\PushController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('vehicles.index');
+    return redirect()->route('chofer.dashboard');
+})->middleware('auth');
+
+// Login
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
+// Chofer routes (authenticated)
+Route::middleware('auth')->prefix('chofer')->name('chofer.')->group(function () {
+    Route::get('/dashboard', [ChoferDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/rutas/iniciar', [ChoferRutaController::class, 'create'])->name('rutas.iniciar');
+    Route::post('/rutas', [ChoferRutaController::class, 'store'])->name('rutas.store');
+    Route::get('/rutas/activa/{ruta}', [ChoferRutaController::class, 'activa'])->name('rutas.activa');
+    Route::post('/rutas/{ruta}/finalizar', [ChoferRutaController::class, 'finalizar'])->name('rutas.finalizar');
+    Route::get('/rutas/historial', [ChoferRutaController::class, 'historial'])->name('rutas.historial');
+    Route::get('/rutas/{ruta}', [ChoferRutaController::class, 'detalle'])->name('rutas.detalle');
+    Route::post('/rutas/{ruta}/ubicaciones', [ChoferRutaController::class, 'ubicaciones'])->name('rutas.ubicaciones');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
-Route::get('/login', function () {
-    return redirect()->route('admin.login');
-})->name('login');
-
-Route::resource('vehicles', VehicleController::class)->middleware('auth');
+// Push subscriptions
+Route::middleware('auth')->post('/push/subscribe', [PushController::class, 'subscribe']);
+Route::middleware('auth')->post('/push/unsubscribe', [PushController::class, 'unsubscribe']);
 
 // Admin routes
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/login', [WebAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [WebAuthController::class, 'login'])->name('login.post');
+    Route::get('/login', [AdminWebAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminWebAuthController::class, 'login'])->name('login.post');
 
     Route::middleware(['auth', 'admin'])->group(function () {
-        Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
+        Route::post('/logout', [AdminWebAuthController::class, 'logout'])->name('logout');
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/vehicles', [VehicleAdminController::class, 'index'])->name('vehicles');
@@ -41,7 +60,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/rutas/{ruta}/pdf', [ExportController::class, 'pdf'])->name('exports.pdf');
         Route::get('/exports/excel', [ExportController::class, 'excel'])->name('exports.excel');
 
-        // Alertas
         Route::get('/alertas', [AlertaAdminController::class, 'index'])->name('alertas.index');
         Route::post('/alertas/{alerta}/leida', [AlertaAdminController::class, 'marcarLeida'])->name('alertas.marcar-leida');
         Route::post('/alertas/leidas/todas', [AlertaAdminController::class, 'marcarTodasLeidas'])->name('alertas.marcar-todas-leidas');
