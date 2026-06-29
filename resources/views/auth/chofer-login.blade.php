@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ruta Transporte - Iniciar sesión</title>
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('icons/icon-192.svg') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
+    <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
     <div class="login-page">

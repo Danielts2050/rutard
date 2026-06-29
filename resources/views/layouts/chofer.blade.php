@@ -6,10 +6,10 @@
     <title>@yield('title', 'Chofer') - Ruta Transporte</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="vapid-public-key" content="{{ env('VAPID_PUBLIC_KEY') }}">
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('icons/icon-192.svg') }}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="/css/app.css">
     @stack('styles')
 </head>
 <body>
@@ -39,8 +39,8 @@
         @yield('content')
     </main>
 
-    <script src="{{ asset('js/chofer/app.js') }}"></script>
-    <script src="{{ asset('js/chofer/push.js') }}"></script>
+    <script src="/js/chofer/app.js"></script>
+    <script src="/js/chofer/push.js"></script>
     @stack('scripts')
 </body>
 </html>
